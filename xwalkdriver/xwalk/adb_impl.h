@@ -39,7 +39,7 @@ class AdbImpl : public Adb {
   virtual Status ClearAppData(const std::string& device_serial,
                               const std::string& package) OVERRIDE;
   virtual Status SetDebugApp(const std::string& device_serial,
-                             const std::string& package) OVERRIDE;
+                             const std::string& package);
   virtual Status Launch(const std::string& device_serial,
                         const std::string& package,
                         const std::string& activity) OVERRIDE;

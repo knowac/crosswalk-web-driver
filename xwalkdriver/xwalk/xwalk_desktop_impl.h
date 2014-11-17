@@ -29,7 +29,7 @@ class XwalkDesktopImpl : public XwalkImpl {
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation,
       base::ProcessHandle process,
-      const CommandLine& command,
+      const base::CommandLine& command,
       base::ScopedTempDir* extension_dir);
   virtual ~XwalkDesktopImpl();
 
@@ -46,11 +46,11 @@ class XwalkDesktopImpl : public XwalkImpl {
   // Overridden from XwalkImpl:
   virtual Status QuitImpl() OVERRIDE;
 
-  const CommandLine& command() const;
+  const base::CommandLine& command() const;
 
  private:
   base::ProcessHandle process_;
-  CommandLine command_;
+  base::CommandLine command_;
   base::ScopedTempDir extension_dir_;
 };
 

@@ -64,7 +64,6 @@ const LevelPair kNameToLevel[] = {
 Log::Level GetLevelFromSeverity(int severity) {
   switch (severity) {
     case logging::LOG_FATAL:
-    case logging::LOG_ERROR_REPORT:
     case logging::LOG_ERROR:
       return Log::kError;
     case logging::LOG_WARNING:
@@ -183,7 +182,7 @@ bool InitLogging() {
   InitLogging(&InternalIsVLogOn);
   g_start_time = base::TimeTicks::Now().ToInternalValue();
 
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch("log-path")) {
     g_log_level = Log::kInfo;
     base::FilePath log_path = cmd_line->GetSwitchValuePath("log-path");

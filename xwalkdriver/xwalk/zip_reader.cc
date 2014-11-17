@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "xwalk/test/xwalkdriver/xwalk/zip_internal.h"
 #include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
 #include <minizip/unzip.h>  // NOLINT
@@ -205,14 +206,15 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
     return false;
 
   net::FileStream stream(NULL);
-  const int flags = (base::PLATFORM_FILE_CREATE_ALWAYS |
-                     base::PLATFORM_FILE_WRITE);
-  if (stream.OpenSync(output_file_path, flags) != 0)
+  net::CompletionCallback call;
+  const int flags = (base::File::FLAG_CREATE_ALWAYS |
+                     base::File::FLAG_WRITE);
+  if (stream.Open(output_file_path, flags, call) != 0)
     return false;
 
   bool success = true;  // This becomes false when something bad happens.
   while (true) {
-    char buf[internal::kZipBufSize];
+    net::IOBuffer* buf(new net::IOBuffer(internal::kZipBufSize));
     const int num_bytes_read = unzReadCurrentFile(zip_file_, buf,
                                                   internal::kZipBufSize);
     if (num_bytes_read == 0) {
@@ -224,7 +226,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
       break;
     } else if (num_bytes_read > 0) {
       // Some data is read. Write it to the output file.
-      if (num_bytes_read != stream.WriteSync(buf, num_bytes_read)) {
+      if (num_bytes_read != stream.Write(buf, num_bytes_read, call)) {
         success = false;
         break;
       }

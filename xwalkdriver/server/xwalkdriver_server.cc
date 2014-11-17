@@ -32,6 +32,8 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_listen_socket.h"
+#include "net/socket/server_socket.h"
+#include "net/socket/tcp_server_socket.h"
 
 namespace {
 
@@ -48,13 +50,16 @@ class HttpServer : public net::HttpServer::Delegate {
   virtual ~HttpServer() {}
 
   bool Start(int port) {
-    server_ = new net::HttpServer(
-        net::TCPListenSocketFactory("0.0.0.0", port), this);
+    scoped_ptr<net::ServerSocket> server_socket(
+      new net::TCPServerSocket(NULL, net::NetLog::Source()));
+    server_socket->ListenWithAddressAndPort("0.0.0.0", port, 1);
+    server_.reset(new net::HttpServer(server_socket.Pass(), this));
     net::IPEndPoint address;
     return server_->GetLocalAddress(&address) == net::OK;
   }
 
   // Overridden from net::HttpServer::Delegate:
+  virtual void OnConnect(int connection_id) OVERRIDE {}
   virtual void OnHttpRequest(int connection_id,
                              const net::HttpServerRequestInfo& info) OVERRIDE {
     handle_request_func_.Run(
@@ -82,7 +87,7 @@ class HttpServer : public net::HttpServer::Delegate {
   }
 
   HttpRequestHandlerFunc handle_request_func_;
-  scoped_refptr<net::HttpServer> server_;
+  scoped_ptr<net::HttpServer> server_;
   base::WeakPtrFactory<HttpServer> weak_factory_;  // Should be last.
 };
 

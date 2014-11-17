@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "base/time/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)

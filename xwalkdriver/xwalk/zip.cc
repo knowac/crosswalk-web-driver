@@ -15,6 +15,7 @@
 #include "xwalk/test/xwalkdriver/xwalk/zip_internal.h"
 #include "xwalk/test/xwalkdriver/xwalk/zip_reader.h"
 #include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
 #include <minizip/unzip.h>  //NOLINT
@@ -28,17 +29,18 @@ namespace {
 
 bool AddFileToZip(zipFile zip_file, const base::FilePath& src_dir) {
   net::FileStream stream(NULL);
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  if (stream.OpenSync(src_dir, flags) != 0) {
+  net::CompletionCallback call;
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  if (stream.Open(src_dir, flags, call) != 0) {
     DLOG(ERROR) << "Could not open stream for path "
                 << src_dir.value();
     return false;
   }
 
   int num_bytes;
-  char buf[zip::internal::kZipBufSize];
+  net::IOBuffer* buf(new net::IOBuffer(zip::internal::kZipBufSize));
   do {
-    num_bytes = stream.ReadSync(buf, zip::internal::kZipBufSize);
+    num_bytes = stream.Read(buf, zip::internal::kZipBufSize, call);
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
         DLOG(ERROR) << "Could not write data to zip for path "
